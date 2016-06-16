@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "/home/andres/project/Repo/OSA-prueba/app/build/intermediates/res/merged/debug/mipmap-xxxhdpi-v4/ic_launcher.png",
+        "source": "/home/andres/project/Repo/OSA-prueba/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/home/andres/project/OSA/app/build/intermediates/res/merged/debug/mipmap-xxxhdpi-v4/ic_launcher.png",
+        "source": "/home/andres/project/OSA/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+    }
+]

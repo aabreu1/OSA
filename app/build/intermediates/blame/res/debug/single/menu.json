@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "/home/andres/project/Repo/OSA-prueba/app/build/intermediates/res/merged/debug/menu/menu_fragment_example.xml",
+        "source": "/home/andres/project/Repo/OSA-prueba/app/src/main/res/menu/menu_fragment_example.xml"
+    },
+    {
+        "merged": "/home/andres/project/OSA/app/build/intermediates/res/merged/debug/menu/menu_fragment_example.xml",
+        "source": "/home/andres/project/OSA/app/src/main/res/menu/menu_fragment_example.xml"
+    }
+]
