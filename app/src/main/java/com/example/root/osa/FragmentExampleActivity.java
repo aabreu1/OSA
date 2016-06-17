@@ -15,8 +15,8 @@ public class FragmentExampleActivity extends AppCompatActivity {
     //DeviceLocation location = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        DeviceLocationManager dlm = new DeviceLocationManager();
+        Context cntx = this.getBaseContext();
+        DeviceLocationManager dlm = new DeviceLocationManager(cntx);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fragment_example);
@@ -25,9 +25,17 @@ public class FragmentExampleActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        TextView tv = (TextView) findViewById(R.id.editText);
-        Context cntx = this.getBaseContext();
-        tv.setText(""+dlm.getLocation(cntx));
+
+
+
+        String[] PosXY = dlm.getLocation();
+
+        TextView x = (TextView) findViewById(R.id.textVAlLat);
+        TextView y = (TextView) findViewById(R.id.textValLon);
+        x.setText(PosXY[0]);
+        y.setText(PosXY[1]);
+
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

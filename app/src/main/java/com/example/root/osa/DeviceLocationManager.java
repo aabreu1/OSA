@@ -1,9 +1,11 @@
 package com.example.root.osa;
 
 import android.annotation.TargetApi;
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.location.Location;
+import android.content.pm.PackageManager;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
@@ -12,18 +14,67 @@ import android.os.Looper;
 import android.util.Log;
 
 import java.security.InvalidParameterException;
+import java.util.Map;
 
 /**
  * Created by root on 09/06/16.
  */
-public  class DeviceLocationManager{
+public  class DeviceLocationManager implements LocationListener {
+
+
+    private final Context context;
+    private String[] lastKnownLocation;
+
+    public DeviceLocationManager(final Context context) {
+        this.context = context;
+    }
+
+
+
+    //public Location getLocation(final LocationSource source) /*throws CantGetDeviceLocationException */{
+
+//        return (Location) getLocation();
+
+  //  }
+
+
+    public String [] getLastKnownLocation() /*throws CantGetDeviceLocationException */{
+        if (lastKnownLocation != null)
+            return lastKnownLocation;
+        else
+            return getLocation();
+    }
+
+    public void onLocationChanged( android.location.Location location) {
+
+        if (location != null) {
+
+            this.deviceLocation = location;
+
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
 
     android.location.LocationManager locationManager;
     Location deviceLocation;
-    Context context;
-    private static final long MIN_TIME_BW_UPDATES = 1L;
-    private static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 0.0F;
-    private static final long MIN_TIME_INTERVAL = 60000L;
+    //Context context;
+    private static final long MIN_TIME_BW_UPDATES = 1;
+    private static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 0;
+    // private static final long MIN_TIME_INTERVAL = 60000L;
 
     LocationListener LL = new LocationListener() {
         @Override
@@ -47,59 +98,101 @@ public  class DeviceLocationManager{
         }
     };
 
+  //  @TargetApi(Build.VERSION_CODES.M)
+    public String [] getLocation() /*throws CantGetDeviceLocationException*/ {
+        String location [] = null;
 
-    @TargetApi(Build.VERSION_CODES.M)
-    public DeviceLocation getLocation(Context context) /*throws CantGetDeviceLocationException*/ {
-        DeviceLocation location = null;
-
-        this.context = context;
+       // this.context = context;
+    try {
         try {
             locationManager = (android.location.LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
 
-            if(locationManager.isProviderEnabled("gps")) {
+            if(locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)) {
+                locationManager.requestLocationUpdates(android.location.LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this, Looper.getMainLooper());
+                if (locationManager != null) {
+                    deviceLocation = locationManager.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
+                    if (deviceLocation != null) {
 
-                locationManager.requestLocationUpdates("gps", 1L, 0.0F, /*(LocationListener)*/ LL, Looper.getMainLooper());
-                if(locationManager == null) {
-                    //throw new CantGetDeviceLocationException("LocationManager is null");
+
+                        String x = ""+deviceLocation.getLatitude();
+                        String y = ""+deviceLocation.getLongitude();
+                        location = new String[]{x, y};
+
+                    } else {
+                        /**
+                         * I not get location device return an exception
+                         */
+                        //throw new CantGetDeviceLocationException("Not get GPS Enabled");
+                    }
+                } else {
+                    /**
+                     * I not get location device return an exception
+                     */
+                   // throw new CantGetDeviceLocationException("LocationManager is null");
+                }
+            } else {
+
+                // GPS not enabled, get status from Network Provider
+                if (locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER)) {
+
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                        if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            // TODO: Consider calling
+                            //    Activity#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for Activity#requestPermissions for more details.
+                            return null;
+                        }
+                    }
+
+                    locationManager.requestLocationUpdates(android.location.LocationManager.NETWORK_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this, Looper.getMainLooper());
+                    // "Network"
+                    if (locationManager != null) {
+                        deviceLocation = locationManager.getLastKnownLocation(android.location.LocationManager.NETWORK_PROVIDER);
+                        if (deviceLocation != null) {
+
+                            String x = ""+deviceLocation.getLatitude();
+                            String y= ""+deviceLocation.getLongitude();
+                            location = new String[]{x,y};
+
+                        } else {
+                            /**
+                             * I not get location device return an exception
+                             */
+                            //throw new CantGetDeviceLocationException("Not get Network Enabled");
+                        }
+                    } else {
+                        /**
+                         * I not get location device return an exception
+                         */
+                       // throw new CantGetDeviceLocationException("LocationManager is null");
+                    }
                 }
 
-                deviceLocation = locationManager.getLastKnownLocation("gps");
-                if(deviceLocation == null) {
-                   // throw new CantGetDeviceLocationException("Not get GPS Enabled");
-                }
 
-                location = new DeviceLocation(Double.valueOf(deviceLocation.getLatitude()), Double.valueOf(deviceLocation.getLongitude()), Long.valueOf(deviceLocation.getTime()), Double.valueOf(deviceLocation.getAltitude()), LocationSource.GPS);
-            } else if(locationManager.isProviderEnabled("network")) {
-                if(Build.VERSION.SDK_INT >= 21 && this.context.checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") != 0 && this.context.checkSelfPermission("android.permission.ACCESS_COARSE_LOCATION") != 0) {
-                        return null;
-                }
-
-                locationManager.requestLocationUpdates("network", 1L, 0.0F, (LocationListener) this, Looper.getMainLooper());
-                if(locationManager == null) {
-                  //  throw new CantGetDeviceLocationException("LocationManager is null");
-                }
-
-                deviceLocation = locationManager.getLastKnownLocation("network");
-                if(deviceLocation == null) {
-                  //  throw new CantGetDeviceLocationException("Not get Network Enabled");
-                }
-
-                location = new DeviceLocation(Double.valueOf(deviceLocation.getLatitude()), Double.valueOf(deviceLocation.getLongitude()), Long.valueOf(deviceLocation.getTime()), Double.valueOf(deviceLocation.getAltitude()), LocationSource.NETWORK);
             }
 
-            return location;
-        } catch (Exception var3) {
+        } catch (Exception e) {
 
-            AlertDialog AD;
-            AD = new AlertDialog.Builder(context).create();
-            AD.setTitle("Exception");
-            AD.setMessage("CAN\'T GET DEVICE LOCATION, "+ var3 + ", unexpected error");
-           // AD.show();
-            //throw new CantGetDeviceLocationException("CAN\'T GET DEVICE LOCATION", var3, "", "unexpected error");
+            /**
+             * unexpected error
+             */
+           // throw new CantGetDeviceLocationException(CantGetDeviceLocationException.DEFAULT_MESSAGE, e, "", "unexpected error");
         }
-      // Log.i("Datos de Ubicacion","Altitud: "+location.altitude+", Longitud: "+location.longitude+", Latitud: "+location.latitude);
-        return location;
+    } catch (Exception e) {
+        // TODO manage this kind of exception in a better way
+
+        if (lastKnownLocation != null)
+            return lastKnownLocation;
+        //else
+          //  location = new DeviceLocation(0.0, 0.0, System.currentTimeMillis(), 0.0, LocationSource.UNKNOWN);
     }
+    lastKnownLocation = location;
+    return location;
+}
 
     private class DeviceLocation {
         /**
